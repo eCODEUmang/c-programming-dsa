@@ -43,16 +43,6 @@ void printList(List* lst) {
     printf("\n");
 }
 
-int listLength(List* lst) {
-    int count = 0;
-    Node* temp = lst->head;
-    while (temp) {
-        count++;
-        temp = temp->next;
-    }
-    return count;
-}
-
 Node* mergeSortedLists(Node* h1, Node* h2) {
     if (!h1) return h2;
     if (!h2) return h1;
@@ -70,9 +60,8 @@ Node* mergeSortedLists(Node* h1, Node* h2) {
     return result;
 }
 
-void concatenateSortedLists(List* A, List* B, List* result) {
-    initList(result);
-    result->head = mergeSortedLists(A->head, B->head);
+void concatenateSortedLists(List* A, List* B, List* R) {
+    R->head = mergeSortedLists(A->head, B->head);
 }
 
 void clearList(List* lst) {
@@ -94,11 +83,13 @@ void inputList(List* lst, int count) {
 }
 
 void displayMenu() {
-    printf("1. Enter first sorted list\n");
-    printf("2. Enter second sorted list\n");
+    printf("\n----- Linked List Menu -----\n");
+    printf("1. Create first sorted list\n");
+    printf("2. Create second sorted list\n");
     printf("3. Concatenate (merge) lists\n");
-    printf("4. Display all lists\n");
+    printf("4. Traverse all lists\n");
     printf("5. Exit\n");
+    printf("Enter your choice: ");
 }
 
 void displayAllLists(List* A, List* B, List* R) {
@@ -116,45 +107,51 @@ int main() {
     initList(&B);
     initList(&R);
 
-    int choice;
-    int n;
+    int choice, n;
 
     while (1) {
         displayMenu();
         scanf("%d", &choice);
 
-        if (choice == 1) {
-            clearList(&A);
-            printf("Enter size of List A: ");
-            scanf("%d", &n);
-            printf("Enter %d sorted elements:\n", n);
-            inputList(&A, n);
+        switch (choice) {
+            case 1:
+                clearList(&A);
+                printf("How many nodes for List A? ");
+                scanf("%d", &n);
+                printf("Enter %d sorted elements:\n", n);
+                inputList(&A, n);
+                break;
 
-        } else if (choice == 2) {
-            clearList(&B);
-            printf("Enter size of List B: ");
-            scanf("%d", &n);
-            printf("Enter %d sorted elements:\n", n);
-            inputList(&B, n);
+            case 2:
+                clearList(&B);
+                printf("How many nodes for List B? ");
+                scanf("%d", &n);
+                printf("Enter %d sorted elements:\n", n);
+                inputList(&B, n);
+                break;
 
-        } else if (choice == 3) {
-            clearList(&R);
-            printf("Merging lists...\n");
-            concatenateSortedLists(&A, &B, &R);
+            case 3:
+                clearList(&R);
+                printf("Concatenating lists...\n");
+                concatenateSortedLists(&A, &B, &R);
+                printf("Merged successfully.\n");
+                break;
 
-        } else if (choice == 4) {
-            displayAllLists(&A, &B, &R);
+            case 4:
+                displayAllLists(&A, &B, &R);
+                break;
 
-        } else if (choice == 5) {
-            clearList(&A);
-            clearList(&B);
-            clearList(&R);
-            break;
+            case 5:
+                clearList(&A);
+                clearList(&B);
+                clearList(&R);
+                exit(0);
 
-        } else {
-            printf("Invalid option\n");
+            default:
+                printf("Invalid choice.\n");
         }
     }
 
     return 0;
 }
+
