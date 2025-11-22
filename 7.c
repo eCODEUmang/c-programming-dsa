@@ -1,174 +1,136 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node {
+struct Node {
     int data;
     struct Node *prev;
     struct Node *next;
-} Node;
+};
 
-typedef struct DoublyList {
-    Node *head;
-    Node *tail;
-    int size;
-} DoublyList;
-
-/* --- Basic helpers --- */
-Node *createNode(int value) {
-    Node *n = (Node*)malloc(sizeof(Node));
-    if (!n) { perror("malloc"); exit(EXIT_FAILURE); }
-    n->data = value;
-    n->prev = n->next = NULL;
-    return n;
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->prev = NULL;
+    newNode->next = NULL;
+    return newNode;
 }
 
-void initList(DoublyList *L) {
-    L->head = L->tail = NULL;
-    L->size = 0;
-}
-
-void clearList(DoublyList *L) {
-    Node *cur = L->head;
-    while (cur) {
-        Node *nx = cur->next;
-        free(cur);
-        cur = nx;
-    }
-    initList(L);
-}
-
-/* Insert at end (keeps tail updated) */
-void insertEnd(DoublyList *L, int value) {
-    Node *n = createNode(value);
-    if (L->head == NULL) {
-        L->head = L->tail = n;
-    } else {
-        L->tail->next = n;
-        n->prev = L->tail;
-        L->tail = n;
-    }
-    L->size++;
-}
-
-/* Print forward */
-void printForward(DoublyList *L) {
-    if (L->head == NULL) {
-        printf("(empty)\n");
+void insertEnd(struct Node** head, int data) {
+    struct Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
         return;
     }
-    for (Node *p = L->head; p != NULL; p = p->next)
-        printf("%d ", p->data);
+    struct Node* temp = *head;
+    while (temp->next != NULL)
+        temp = temp->next;
+    temp->next = newNode;
+    newNode->prev = temp;
+}
+
+void displayList(struct Node* head) {
+    if (!head) {
+        printf("List is empty.\n");
+        return;
+    }
+    struct Node* temp = head;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
     printf("\n");
 }
 
-/* Print backward */
-void printBackward(DoublyList *L) {
-    if (L->tail == NULL) {
-        printf("(empty)\n");
+void concatenate(struct Node** head1, struct Node** head2) {
+    if (*head1 == NULL) {
+        *head1 = *head2;
+        *head2 = NULL;
         return;
     }
-    for (Node *p = L->tail; p != NULL; p = p->prev)
-        printf("%d ", p->data);
-    printf("\n");
+    if (*head2 == NULL) {
+        return;
+    }
+    struct Node* temp = *head1;
+    while (temp->next != NULL)
+        temp = temp->next;
+
+    temp->next = *head2;
+    (*head2)->prev = temp;
+    *head2 = NULL;
 }
 
-/* Read n elements and append to list */
-void inputList(DoublyList *L, int n) {
-    int x;
-    for (int i = 0; i < n; ++i) {
-        if (scanf("%d", &x) != 1) { printf("Invalid input\n"); exit(EXIT_FAILURE); }
-        insertEnd(L, x);
+void freeList(struct Node** head) {
+    struct Node* temp;
+    while (*head != NULL) {
+        temp = *head;
+        *head = (*head)->next;
+        free(temp);
     }
 }
 
-/* Concatenate B onto A. After this, B becomes empty. */
-void concatenateLists(DoublyList *A, DoublyList *B) {
-    if (B->head == NULL) return;       /* nothing to do */
-    if (A->head == NULL) {
-        /* A empty -> A takes B entirely */
-        A->head = B->head;
-        A->tail = B->tail;
-        A->size = B->size;
-    } else {
-        /* link tails/heads */
-        A->tail->next = B->head;
-        B->head->prev = A->tail;
-        A->tail = B->tail;
-        A->size += B->size;
-    }
-    /* Make B empty (important!) */
-    B->head = B->tail = NULL;
-    B->size = 0;
-}
+int main() {
+    struct Node *list1 = NULL, *list2 = NULL;
+    int choice, data, n, i;
 
-/* --- Menu and main --- */
-void showMenu(void) {
-    printf("\nMenu\n");
-    printf("1. Create List A\n");
-    printf("2. Create List B\n");
-    printf("3. Show List A\n");
-    printf("4. Show List B\n");
-    printf("5. Concatenate B onto A\n");
-    printf("6. Show A forward, A backward\n");
-    printf("7. Clear both lists and exit\n");
-    printf("Enter option: ");
-}
-
-int main(void) {
-    DoublyList A, B;
-    initList(&A);
-    initList(&B);
-
-    int opt;
     while (1) {
-        showMenu();
-        if (scanf("%d", &opt) != 1) { puts("Bad input"); break; }
+        printf("\n----- List Menu -----\n");
+        printf("1. Create List 1\n");
+        printf("2. Create List 2\n");
+        printf("3. Display List 1\n");
+        printf("4. Display List 2\n");
+        printf("5. Concatenate List 1 and List 2\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
 
-        if (opt == 1) {
-            clearList(&A);
-            int n;
-            printf("Enter number of elements for List A: ");
-            if (scanf("%d", &n) != 1 || n < 0) { puts("Invalid"); break; }
-            if (n > 0) {
-                printf("Enter %d integers:\n", n);
-                inputList(&A, n);
-            }
-        } else if (opt == 2) {
-            clearList(&B);
-            int n;
-            printf("Enter number of elements for List B: ");
-            if (scanf("%d", &n) != 1 || n < 0) { puts("Invalid"); break; }
-            if (n > 0) {
-                printf("Enter %d integers:\n", n);
-                inputList(&B, n);
-            }
-        } else if (opt == 3) {
-            printf("List A (forward): ");
-            printForward(&A);
-            printf("List A (backward): ");
-            printBackward(&A);
-        } else if (opt == 4) {
-            printf("List B (forward): ");
-            printForward(&B);
-            printf("List B (backward): ");
-            printBackward(&B);
-        } else if (opt == 5) {
-            concatenateLists(&A, &B);
-            printf("Concatenation done. List B is now empty.\n");
-        } else if (opt == 6) {
-            printf("A forward: ");
-            printForward(&A);
-            printf("A backward: ");
-            printBackward(&A);
-        } else if (opt == 7) {
-            clearList(&A);
-            clearList(&B);
-            printf("Lists cleared. Exiting.\n");
-            break;
-        } else {
-            printf("Invalid option. Try again.\n");
+        switch (choice) {
+
+            case 1:
+                printf("Enter number of nodes for List 1: ");
+                scanf("%d", &n);
+                printf("Enter elements: ");
+                for (i = 0; i < n; i++) {
+                    scanf("%d", &data);
+                    insertEnd(&list1, data);
+                }
+                break;
+
+            case 2:
+                printf("Enter number of nodes for List 2: ");
+                scanf("%d", &n);
+                printf("Enter elements: ");
+                for (i = 0; i < n; i++) {
+                    scanf("%d", &data);
+                    insertEnd(&list2, data);
+                }
+                break;
+
+            case 3:
+                printf("List 1: ");
+                displayList(list1);
+                break;
+
+            case 4:
+                printf("List 2: ");
+                displayList(list2);
+                break;
+
+            case 5:
+                printf("Concatenating List 2 into List 1...\n");
+                concatenate(&list1, &list2);
+                printf("Concatenation complete.\n");
+                break;
+
+            case 6:
+                freeList(&list1);
+                freeList(&list2);
+                exit(0);
+
+            default:
+                printf("Invalid choice.\n");
         }
     }
 
     return 0;
 }
+
